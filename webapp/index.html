@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Заявка</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+body { font-family: Arial; padding: 16px; }
+button:disabled { background: #ccc; }
+</style>
+</head>
+<body>
+
+<h3>Оформление заявки</h3>
+
+<select id="type">
+<option value="">Тип задачи</option>
+<option>Чертежи для курсовой / диплома</option>
+<option>3D-модель под печать</option>
+<option>Модель под ЧПУ</option>
+<option>Чертежи под лазерную резку</option>
+</select>
+
+<textarea id="desc" placeholder="Описание задачи"></textarea>
+
+<input type="file" id="files" multiple>
+
+<button id="send" disabled>Отправить</button>
+
+<script>
+const tg = window.Telegram.WebApp;
+tg.expand();
+
+const files = document.getElementById("files");
+const btn = document.getElementById("send");
+
+files.onchange = () => {
+  btn.disabled = files.files.length === 0;
+};
+
+btn.onclick = async () => {
+  const data = new FormData();
+  data.append("user", tg.initDataUnsafe.user.username || "без username");
+  data.append("type", document.getElementById("type").value);
+  data.append("description", document.getElementById("desc").value);
+
+  for (let f of files.files) data.append("files", f);
+
+  await fetch("/submit", { method: "POST", body: data });
+  tg.close();
+};
+</script>
+
+</body>
+</html>
