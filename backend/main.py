@@ -1,40 +1,15 @@
-import os
-import requests
-from fastapi import FastAPI, UploadFile, Form
-from dotenv import load_dotenv
+from flask import Flask, send_from_directory
 
-load_dotenv()
+app = Flask(__name__, static_folder="../webapp")
 
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-CHANNEL_ID = os.getenv("ADMIN_CHANNEL_ID")
+@app.route("/webapp/<path:path>")
+def send_webapp(path):
+    return send_from_directory(app.static_folder, path)
 
-app = FastAPI()
+@app.route("/webapp")
+def index():
+    return send_from_directory(app.static_folder, "index.html")
 
-@app.post("/submit")
-async def submit(
-    user: str = Form(...),
-    type: str = Form(...),
-    description: str = Form(...),
-    files: list[UploadFile] = []
-):
-    text = (
-        f"🆕 Новая заявка\n\n"
-        f"👤 @{user}\n"
-        f"📌 Тип: {type}\n\n"
-        f"{description}"
-    )
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=10000)
 
-    requests.post(
-        f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
-        data={"chat_id": CHANNEL_ID, "text": text}
-    )
-
-    for file in files:
-        content = await file.read()
-        requests.post(
-            f"https://api.telegram.org/bot{BOT_TOKEN}/sendDocument",
-            data={"chat_id": CHANNEL_ID},
-            files={"document": (file.filename, content)}
-        )
-
-    return {"ok": True}

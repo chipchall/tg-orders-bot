@@ -1,5 +1,5 @@
-aiogram==3.4.1
-fastapi
-uvicorn
-python-dotenv
-requests
+pyTelegramBotAPI==4.15.0
+Flask==2.3.3
+python-dotenv==1.2.1
+requests==2.32.5
+
